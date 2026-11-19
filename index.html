@@ -131,6 +131,13 @@ h1{animation:wob 4s ease-in-out infinite}
 .tk{display:inline-flex;align-items:center;gap:6px;margin:6px 8px 0;padding:4px 10px;border:1px solid rgba(94,224,255,.4);border-radius:20px;font-size:.85em;opacity:.8}
 .tk small{display:inline;font-size:.7em;margin-left:4px}.tk.ok{border-color:#5dffb0;color:#5dffb0;opacity:1;background:rgba(93,255,176,.12)}
 .ch.bad{opacity:.4;border-color:#ff7a8a;text-decoration:line-through}
+/* 內容太高時從頂部開始捲動，不再被切掉 */
+.scr:not(#tv){justify-content:flex-start}
+.scr:not(#tv)::before,.scr:not(#tv)::after{content:'';flex:1 1 0;min-height:0}
+#stw{width:max(300px,min(96vw,860px,calc((100vh - 330px)*1.6)))}
+@supports(height:100dvh){#stw{width:max(300px,min(96vw,860px,calc((100dvh - 330px)*1.6)))}}
+#homeBtn{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:45;display:none;padding:8px 14px;font-size:14px;line-height:1.2;text-align:left}
+#homeBtn small{font-size:.7em}
 @media(max-width:700px){
 #top{height:56px;padding:0 6px}#top b{font-size:14px;letter-spacing:0}#top b i{margin:0 .2em}#top span{font-size:9px}
 .scr{top:56px}
@@ -161,6 +168,7 @@ h1{animation:wob 4s ease-in-out infinite}
 </defs></svg>
 <div id="top"><b>圖書館<i>×</i>公民與社會發展<i>×</i>國民及公民教育</b><span>Library × Citizenship and Social Development × National and Civic Education</span></div>
 <div id="bgfx"></div>
+<button class="btn g" id="homeBtn" onclick="toHome()"><i data-ic="planet"></i> 返回主頁<small>Back to home</small></button>
 
 <div class="scr on" id="pick">
  <div class="tg">SYSTEM // 理想太空站</div>
@@ -283,7 +291,8 @@ let col=null,ROOM=[],seen=false,subOn=false,scene='',B=[],me=null,pushed=false,c
 const FB_CFG={apiKey:"AIzaSyBqhJtSBP5aSYw8vT8MZoKbayFDFeDiCSA",authDomain:"cargomission-c48f8.firebaseapp.com",projectId:"cargomission-c48f8",storageBucket:"cargomission-c48f8.firebasestorage.app",messagingSenderId:"986039887329",appId:"1:986039887329:web:3d7a6c2e6e80ad71409ea0"};
 const dbReady=(async()=>{try{if(window.firebase){if(!firebase.apps.length)firebase.initializeApp(FB_CFG);col=firebase.firestore().collection('launches');return}}catch(e){console.error(e)}
 try{if(typeof claude!=='undefined'){const d=await claude.use('db');if(d)col=d.collection('launches')}}catch(e){}})();
-function show(id){document.querySelectorAll('.scr').forEach(e=>e.classList.toggle('on',e.id==id))}
+function show(id){document.querySelectorAll('.scr').forEach(e=>e.classList.toggle('on',e.id==id));const hb=$('#homeBtn');if(hb)hb.style.display=(id=='home'||id=='pick'||id=='tv')?'none':'block'}
+function toHome(){clearTimeout(idle);scene='';clearLabels();['#h1','#h2','#bkp'].forEach(q=>$(q).style.display='none');$('#nx').classList.remove('show');show('home')}
 function route(){clearTimeout(idle);if(window.__no3d){const m=$('#msg0');if(m)m.innerHTML='3D 元件未能載入，請檢查網絡（部分網絡會擋住 cdnjs）<small>3D library failed to load — check your network</small>'}const h=location.hash;startSub();if(h=='#tv'){show('tv');tvSync()}else if(h=='#ipad')show('home');else show('pick')}
 addEventListener('hashchange',()=>location.reload());
 const bkTxt=id=>{const b=BOOKS[id];return `${ic(b.k)} 《${b.t}》 · 索書號 ${b.c} · ${b.pub?ic('bank')+' 香港公共圖書館':ic('school')+' 校內圖書館'}`};
