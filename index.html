@@ -3,6 +3,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>理想太空站</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 if(!window.THREE)document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>');
 </script>
@@ -129,6 +131,26 @@ h1{animation:wob 4s ease-in-out infinite}
 .tk{display:inline-flex;align-items:center;gap:6px;margin:6px 8px 0;padding:4px 10px;border:1px solid rgba(94,224,255,.4);border-radius:20px;font-size:.85em;opacity:.8}
 .tk small{display:inline;font-size:.7em;margin-left:4px}.tk.ok{border-color:#5dffb0;color:#5dffb0;opacity:1;background:rgba(93,255,176,.12)}
 .ch.bad{opacity:.4;border-color:#ff7a8a;text-decoration:line-through}
+@media(max-width:700px){
+#top{height:56px;padding:0 6px}#top b{font-size:14px;letter-spacing:0}#top b i{margin:0 .2em}#top span{font-size:9px}
+.scr{top:56px}
+.scr:not(#tv){justify-content:flex-start;padding:10px 8px;gap:10px}
+.scr:not(#tv)::before,.scr:not(#tv)::after{content:'';flex:1 1 0;min-height:0}
+#ig{grid-template-columns:repeat(3,1fr);gap:8px;width:94vw}
+.it{font-size:14px;padding:12px 2px 10px}
+.btn{padding:10px 18px}
+.hud{padding:10px 12px}
+.ico{width:64px;height:64px}.row{gap:10px}
+.ch{padding:12px 14px;min-height:64px}.ch .lt{width:36px;height:36px;font-size:18px}
+#h2{display:none!important}
+#h1{font-size:10px;padding:5px 8px;left:6px;top:6px}
+#ov{font-size:clamp(28px,12vw,56px)}
+#bkp{max-width:94%;font-size:11px;left:6px;bottom:6px}#bkp canvas{width:52px;height:72px}
+#snd{font-size:11px;padding:4px 8px;right:6px;bottom:6px}
+.lb{font-size:10px;padding:2px 5px}
+.tk{font-size:.75em;margin:4px 3px 0;padding:3px 8px}
+.sec,.note,.bkr{font-size:13px}
+}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ae8ff"/><stop offset="1" stop-color="#8b6cff"/></linearGradient>
@@ -137,7 +159,7 @@ h1{animation:wob 4s ease-in-out infinite}
 <linearGradient id="gP" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9ec4"/><stop offset="1" stop-color="#ff4f6d"/></linearGradient>
 <linearGradient id="gV" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b63d6"/><stop offset="1" stop-color="#0b1a52"/></linearGradient>
 </defs></svg>
-<div id="top"><b>圖書館<i>×</i>公民與社會發展<i>×</i>國民及公民教育</b><span>Library × Citizenship and Social Development × National and Citizenship Education</span></div>
+<div id="top"><b>圖書館<i>×</i>公民與社會發展<i>×</i>國民及公民教育</b><span>Library × Citizenship and Social Development × National and Civic Education</span></div>
 <div id="bgfx"></div>
 
 <div class="scr on" id="pick">
@@ -258,7 +280,9 @@ const TIPS=['S6','P4','S4','P1','S8','S1','S2','P2','S7'];
 const $=q=>document.querySelector(q),esc=v=>String(v).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 const mode=location.hash=='#tv'?'tv':'ipad';
 let col=null,ROOM=[],seen=false,subOn=false,scene='',B=[],me=null,pushed=false,cabT=0,t0=0,sel=0,drag=null,idle,bkT,tvB=new Map(),tvBooks=[],tvArr=[],GL=null,glErr=false;
-const dbReady=(async()=>{try{if(typeof claude!=='undefined'){const d=await claude.use('db');if(d)col=d.collection('launches')}}catch(e){}})();
+const FB_CFG={apiKey:"AIzaSyBqhJtSBP5aSYw8vT8MZoKbayFDFeDiCSA",authDomain:"cargomission-c48f8.firebaseapp.com",projectId:"cargomission-c48f8",storageBucket:"cargomission-c48f8.firebasestorage.app",messagingSenderId:"986039887329",appId:"1:986039887329:web:3d7a6c2e6e80ad71409ea0"};
+const dbReady=(async()=>{try{if(window.firebase){if(!firebase.apps.length)firebase.initializeApp(FB_CFG);col=firebase.firestore().collection('launches');return}}catch(e){console.error(e)}
+try{if(typeof claude!=='undefined'){const d=await claude.use('db');if(d)col=d.collection('launches')}}catch(e){}})();
 function show(id){document.querySelectorAll('.scr').forEach(e=>e.classList.toggle('on',e.id==id))}
 function route(){clearTimeout(idle);if(window.__no3d){const m=$('#msg0');if(m)m.innerHTML='3D 元件未能載入，請檢查網絡（部分網絡會擋住 cdnjs）<small>3D library failed to load — check your network</small>'}const h=location.hash;startSub();if(h=='#tv'){show('tv');tvSync()}else if(h=='#ipad')show('home');else show('pick')}
 addEventListener('hashchange',()=>location.reload());
@@ -520,7 +544,7 @@ $('#fin').onclick=()=>{clearTimeout(idle);show('home')};
 
 /* ===== 資料同步與電視 ===== */
 function startSub(){if(subOn)return;subOn=true;dbReady.then(()=>{if(!col){if(mode=='tv'){const l=$('#last');if(l)l.innerHTML='<p>電視同步需要資料庫<small>Live sync needs a database</small></p>'}return}
- col.onSnapshot(sn=>{const first=!seen;const all=sn.docs.map(d=>d.data()).filter(d=>d&&ITEMS[d.k]).sort((a,b)=>a.t-b.t);const added=!first&&all.length>ROOM.length;ROOM=all;seen=true;tvSync(first,added)},()=>{})})}
+ col.onSnapshot(sn=>{const first=!seen;const all=sn.docs.map(d=>d.data()).filter(d=>d&&ITEMS[d.k]).sort((a,b)=>a.t-b.t);const added=!first&&all.length>ROOM.length;ROOM=all;seen=true;tvSync(first,added)},e=>{if(mode=='tv'){const l=$('#last');if(l)l.innerHTML='<p>資料庫連線失敗<small>'+esc(e&&e.message||e)+'</small></p>'}})})}
 function ban(t){const b=$('#ban');b.innerHTML=t;b.classList.add('on');clearTimeout(ban.t);ban.t=setTimeout(()=>b.classList.remove('on'),4500)}
 function tvSync(first,added){if(mode!='tv')return;const V=THREE&&THREE.Vector3;
  if(GL||initGL()){const C=GL.cabin.scene;
